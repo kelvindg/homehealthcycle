@@ -246,7 +246,7 @@
     var periods = [];
     for (var p = 0; p < 6; p++) periods.push({ num: p + 1, start: addDays(soc, p * 30), end: addDays(soc, p * 30 + 29) });
 
-    var recerts = visitList(soc, 60, 3);
+    var recerts = visitList(soc, 60, 8);   // up to 8 recertifications (every 60 days)
     var hha = visitList(hhaStart, 14, 8);
     var lvn = visitList(lvnStart, 30, 6);
 
