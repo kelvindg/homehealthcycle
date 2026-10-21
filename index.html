@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KDG Compliance Tools — Home Health Cycle Calculator</title>
+<style>
+  :root {
+    --ink: #0f2a33;
+    --ink-soft: #48616a;
+    --bg: #eef4f5;
+    --card: #ffffff;
+    --line: #dbe6e8;
+    --teal: #0e7c86;
+    --teal-deep: #0a5f68;
+    --teal-soft: #e3f1f3;
+    --amber: #b9770e;
+    --amber-soft: #fdf1dc;
+    --rose: #b3405a;
+    --rose-soft: #fce9ee;
+    --indigo: #4552a8;
+    --indigo-soft: #e9ecfb;
+    --green: #2e7d4f;
+    --green-soft: #e4f2e9;
+    --violet: #7a3fa0;
+    --violet-soft: #f1e9f9;
+    --radius: 16px;
+    --shadow: 0 1px 2px rgba(15,42,51,.04), 0 8px 24px rgba(15,42,51,.06);
+    --font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    background: linear-gradient(180deg, #e7f0f1 0%, var(--bg) 240px);
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header { text-align: center; margin-bottom: 36px; }
+  .kicker {
+    display: inline-block; font-size: 11px; letter-spacing: .18em; font-weight: 700;
+    text-transform: uppercase; color: var(--teal); background: var(--teal-soft);
+    padding: 6px 14px; border-radius: 999px; margin-bottom: 14px;
+  }
+  h1 { font-size: 30px; font-weight: 750; letter-spacing: -.02em; }
+  h1 span { color: var(--teal); }
+  .sub { color: var(--ink-soft); margin-top: 8px; font-size: 15px; max-width: 680px; margin-left: auto; margin-right: auto; }
+
+  .panel {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 26px 28px; margin-bottom: 22px;
+  }
+
+  .input-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 8px; flex: 1 1 240px; }
+  .field label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+  .field input[type="date"] {
+    font-family: var(--font); font-size: 17px; font-weight: 600; color: var(--ink);
+    padding: 14px 16px; border: 1.5px solid var(--line); border-radius: 12px;
+    background: #fbfdfd; outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  .field input[type="date"]:focus { border-color: var(--teal); box-shadow: 0 0 0 4px var(--teal-soft); }
+  .field .hint { font-size: 11.5px; color: var(--ink-soft); font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .btn {
+    font-family: var(--font); font-weight: 700; font-size: 15px; color: #fff;
+    background: var(--teal); border: none; border-radius: 12px; padding: 15px 26px;
+    cursor: pointer; transition: background .15s, transform .05s;
+  }
+  .btn:hover { background: var(--teal-deep); }
+  .btn:active { transform: translateY(1px); }
+
+  /* Follow-SOC toggle */
+  .follow-block { margin-top: 20px; padding-top: 18px; border-top: 1px dashed var(--line); }
+  .follow-block .q { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+  .toggle { display: flex; gap: 12px; }
+  .toggle-opt {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600;
+    color: var(--ink); background: #fbfdfd; border: 1.5px solid var(--line); border-radius: 10px;
+    padding: 9px 16px; cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .toggle-opt input { accent-color: var(--teal); width: 16px; height: 16px; cursor: pointer; }
+  .toggle-opt:has(input:checked) { border-color: var(--teal); background: var(--teal-soft); color: var(--teal-deep); }
+
+  [hidden] { display: none !important; }
+
+  .empty { text-align: center; color: var(--ink-soft); padding: 30px 10px; font-size: 14px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+
+  .card {
+    border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 16px;
+    background: #fff; position: relative; overflow: hidden;
+  }
+  .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+  .card.teal::before { background: var(--teal); }
+  .card.indigo::before { background: var(--indigo); }
+  .card.amber::before { background: var(--amber); }
+  .card.rose::before { background: var(--rose); }
+  .card.green::before { background: var(--green); }
+  .card.violet::before { background: var(--violet); }
+
+  .card .cat { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+  .card.teal .cat { color: var(--teal); }
+  .card.indigo .cat { color: var(--indigo); }
+  .card.amber .cat { color: var(--amber); }
+  .card.rose .cat { color: var(--rose); }
+  .card.green .cat { color: var(--green); }
+  .card.violet .cat { color: var(--violet); }
+
+  .card .label { font-size: 15px; font-weight: 650; color: var(--ink); margin-bottom: 4px; }
+  .card .date { font-size: 13px; font-weight: 600; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .card .date .day { color: var(--ink); }
+  .card .note { font-size: 12px; color: var(--ink-soft); margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); }
+
+  .soc-badge {
+    display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700;
+    color: var(--teal-deep); background: var(--teal-soft); padding: 8px 14px; border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  .soc-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); }
+  .soc-badge.violet { color: #5d2a80; background: var(--violet-soft); }
+  .soc-badge.violet .dot { background: var(--violet); }
+
+  .section-title { font-size: 15px; font-weight: 750; letter-spacing: -.01em; margin-bottom: 6px; }
+  .section-sub { font-size: 12px; color: var(--ink-soft); margin-bottom: 10px; }
+
+  .timeline { margin-top: 4px; }
+  .tl-row { display: flex; align-items: baseline; gap: 12px; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+  .tl-row:last-child { border-bottom: none; }
+  .tl-num { font-size: 12px; font-weight: 700; color: var(--teal); width: 72px; flex-shrink: 0; }
+  .tl-label { font-size: 14px; font-weight: 600; }
+  .tl-date { margin-left: auto; font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tl-date b { color: var(--ink); font-weight: 650; }
+  .tl-row.violet .tl-num { color: var(--violet); }
+
+  .foot { text-align: center; color: var(--ink-soft); font-size: 12px; margin-top: 8px; }
+  .foot code { background: #eef2f3; padding: 1px 6px; border-radius: 5px; }
+  .disclaimer {
+    background: var(--teal-soft); color: var(--ink); font-size: 12.5px;
+    padding: 14px 16px; border-radius: 12px; margin-top: 24px; line-height: 1.55;
+  }
+  .disclaimer b { color: var(--teal-deep); }
+
+  @media (max-width: 560px) {
+    h1 { font-size: 24px; }
+    .btn { width: 100%; }
+    .tl-date { white-space: normal; text-align: right; }
+    .toggle { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">KDG Compliance Tools</div>
+    <h1>Home Health <span>Cycle Calculator</span></h1>
+    <p class="sub">Enter a Start of Care (SOC) date to get every key regulatory deadline and supervisory-visit schedule. Optionally track a Therapy Evaluation date and independent HHA/LVN first-visit dates.</p>
+  </header>
+
+  <div class="panel">
+    <div class="input-row">
+      <div class="field">
+        <label for="soc">Start of Care (SOC) date</label>
+        <input type="date" id="soc">
+        <span class="hint">Required — Current date today</span>
+      </div>
+      <div class="field">
+        <label for="therapy">Therapy Evaluation Date</label>
+        <input type="date" id="therapy">
+        <span class="hint">Optional — leave blank if no therapy</span>
+      </div>
+      <button class="btn" id="compute">Calculate</button>
+    </div>
+
+    <div class="follow-block">
+      <div class="q">Do HHA &amp; LVN supervision follow the SOC date?</div>
+      <div class="toggle">
+        <label class="toggle-opt"><input type="radio" name="followSoc" value="yes" checked> Yes</label>
+        <label class="toggle-opt"><input type="radio" name="followSoc" value="no"> No</label>
+      </div>
+    </div>
+
+    <div class="input-row" id="firstVisitRow" hidden style="margin-top:16px;">
+      <div class="field">
+        <label for="hhaFirst">HHA First Visit?</label>
+        <input type="date" id="hhaFirst">
+      </div>
+      <div class="field">
+        <label for="lvnFirst">LVN First Visit?</label>
+        <input type="date" id="lvnFirst">
+      </div>
+    </div>
+  </div>
+
+  <div id="output">
+    <div class="panel">
+      <div class="empty">Enter a SOC date above and press <b>Calculate</b> to see the full episode timeline.</div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <b>Reference tool only.</b> Dates follow current CMS Medicare rules (42 CFR Part 484, Medicare Benefit Policy Manual Ch. 7, Medicare Claims Processing Manual Ch. 10). Supervisory-visit cadences reflect agency policy; confirm with your state/agency. Deadlines that fall on a weekend or holiday may be extended to the next business day per CMS timely-filing rules — verify final billing deadlines with your MAC. This calculator does not constitute payment or compliance advice.
+  </div>
+
+  <p class="foot">All calculation runs locally in your browser — no data is transmitted or stored.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var WEEKDAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  function parseISO(str) {
+    var p = str.split("-");
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  }
+  function addDays(d, n) { var r = new Date(d.getTime()); r.setDate(r.getDate() + n); return r; }
+  function addMonths(d, n) { var r = new Date(d.getTime()); r.setMonth(r.getMonth() + n); return r; }
+  function fmtDate(d) { return WEEKDAYS[d.getDay()] + ", " + MONTHS[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear(); }
+  function short(d) { return MONTHS[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear(); }
+  function hasFeb29InRange(startDays, endDays, soc) {
+    for (var i = startDays; i <= endDays; i++) { var d = addDays(soc, i); if (d.getMonth() === 1 && d.getDate() === 29) return true; }
+    return false;
+  }
+  function visitList(start, interval, count) {
+    var list = [];
+    for (var i = 1; i <= count; i++) list.push(addDays(start, i * interval));
+    return list;
+  }
+  function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+
+  function compute(soc, hhaStart, lvnStart) {
+    var f2fEarliest = addDays(soc, -90);
+    var f2fLatest   = addDays(soc, 30);
+    var oasisDue    = addDays(soc, 2);   // 48 hours after SOC
+    var oasisTx     = addDays(soc, 32);  // 48-hour assessment + 30-day transmission window
+    var noaDue      = addDays(soc, 5);
+    var certDue     = addDays(soc, 30);
+    var finalClaim  = addMonths(soc, 12);
+
+    var periods = [];
+    for (var p = 0; p < 6; p++) periods.push({ num: p + 1, start: addDays(soc, p * 30), end: addDays(soc, p * 30 + 29) });
+
+    var recerts = visitList(soc, 60, 3);
+    var hha = visitList(hhaStart, 14, 8);
+    var lvn = visitList(lvnStart, 30, 6);
+
+    return {
+      soc: soc, f2fEarliest: f2fEarliest, f2fLatest: f2fLatest,
+      oasisDue: oasisDue, oasisTx: oasisTx, noaDue: noaDue, certDue: certDue,
+      finalClaim: finalClaim, periods: periods, recerts: recerts,
+      hha: hha, lvn: lvn, feb29: hasFeb29InRange(0, 59, soc)
+    };
+  }
+
+  function esc(s) { return String(s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
+
+  function card(cls, cat, label, date, note) {
+    return '<div class="card ' + cls + '">' +
+      '<div class="cat">' + esc(cat) + '</div>' +
+      '<div class="label">' + esc(label) + '</div>' +
+      '<div class="date"><span class="day">' + esc(date) + '</span></div>' +
+      (note ? '<div class="note">' + esc(note) + '</div>' : '') +
+      '</div>';
+  }
+
+  function visitCard(cls, title, sub, dates, startNote) {
+    var h = '<div class="card ' + cls + '"><div class="cat">' + esc(title) + '</div><div class="label">' + esc(sub) + '</div>';
+    if (startNote) h += '<div class="note">Counting from: ' + esc(startNote) + '</div>';
+    dates.forEach(function (d, i) {
+      h += '<div class="tl-row"><span class="tl-num">Visit ' + (i + 1) + '</span><span class="tl-date"><b>' + fmtDate(d) + '</b></span></div>';
+    });
+    h += '</div>';
+    return h;
+  }
+
+  function render(res, therapyDate, hhaStart, lvnStart) {
+    var html = "";
+    html += '<div class="panel"><span class="soc-badge"><span class="dot"></span>Start of Care — ' + fmtDate(res.soc) + '</span>';
+
+    html += '<div class="grid">';
+    html += card("rose", "Notice of Admission (NOA)", "Submit by", fmtDate(res.noaDue), "Within 5 calendar days of SOC. Late NOA = payment reduced per day.");
+    html += card("teal", "Comprehensive OASIS Assessment", "Complete by", fmtDate(res.oasisDue), "Within 48 hours after SOC (stricter than the 5-day federal minimum).");
+    html += card("teal", "OASIS Transmission", "Transmit by", fmtDate(res.oasisTx), "Within 30 days of assessment completion. Late = 2% payment reduction.");
+    html += card("indigo", "Plan of Care", "Signed before", fmtDate(res.certDue), "Physician signs no later than 30 days after SOC.");
+    html += card("amber", "Face-to-Face Encounter", "Window", fmtDate(res.f2fEarliest) + " → " + fmtDate(res.f2fLatest), "90 days before SOC through 30 days after SOC.");
+    html += card("green", "Final Claim Submission", "File no later than", fmtDate(res.finalClaim), "12 months from the last date of service.");
+    html += '</div></div>';
+
+    html += '<div class="panel"><div class="section-title">30-Day Billing Periods (PDGM)</div><div class="section-sub">Unit of payment = 30-day period of care.</div>';
+    res.periods.forEach(function (pr) {
+      html += '<div class="tl-row"><span class="tl-num">Period ' + pr.num + '</span><span class="tl-label">' + short(pr.start) + ' — ' + short(pr.end) + '</span></div>';
+    });
+    html += '</div>';
+
+    html += '<div class="grid">';
+    html += '<div class="card indigo"><div class="cat">Recertification</div><div class="label">Every 60 days</div>';
+    res.recerts.forEach(function (d, i) {
+      html += '<div class="tl-row"><span class="tl-num">' + (i + 1) + '</span><span class="tl-date"><b>' + fmtDate(d) + '</b></span></div>';
+    });
+    if (res.feb29) html += '<div class="note">Feb 29 falls in this 60-day episode — subtract 1 day from the episode end date.</div>';
+    html += '</div>';
+
+    var hhaNote = sameDay(hhaStart, res.soc) ? null : fmtDate(hhaStart);
+    var lvnNote = sameDay(lvnStart, res.soc) ? null : fmtDate(lvnStart);
+    html += visitCard("green", "HHA 14 Day Supervisory", "Every 14 days", res.hha, hhaNote);
+    html += visitCard("teal", "LVN 30 Day Supervisory", "Every 30 days", res.lvn, lvnNote);
+    html += '</div>';
+
+    if (therapyDate) {
+      var therapyVisits = visitList(therapyDate, 30, 6);
+      html += '<div class="panel">' +
+        '<span class="soc-badge violet"><span class="dot"></span>Therapy Evaluation Date — ' + fmtDate(therapyDate) + '</span>' +
+        '<div class="section-title">Therapy Visit — 30 Day Supervisory</div>' +
+        '<div class="section-sub">Supervision every 30 days from the therapy evaluation date.</div>';
+      therapyVisits.forEach(function (d, i) {
+        html += '<div class="tl-row violet"><span class="tl-num">Visit ' + (i + 1) + '</span><span class="tl-date"><b>' + fmtDate(d) + '</b></span></div>';
+      });
+      html += '</div>';
+    }
+
+    document.getElementById("output").innerHTML = html;
+  }
+
+  var input = document.getElementById("soc");
+  var therapyInput = document.getElementById("therapy");
+  var hhaFirstInput = document.getElementById("hhaFirst");
+  var lvnFirstInput = document.getElementById("lvnFirst");
+  var firstVisitRow = document.getElementById("firstVisitRow");
+  var btn = document.getElementById("compute");
+
+  function followsSoc() {
+    var checked = document.querySelector('input[name="followSoc"]:checked');
+    return checked ? checked.value === "yes" : true;
+  }
+  function updateFollowVisibility() {
+    firstVisitRow.hidden = followsSoc();
+  }
+
+  function run() {
+    if (!input.value) { return; }
+    var soc = parseISO(input.value);
+    var hhaStart = soc, lvnStart = soc;
+    if (!followsSoc()) {
+      hhaStart = hhaFirstInput.value ? parseISO(hhaFirstInput.value) : soc;
+      lvnStart = lvnFirstInput.value ? parseISO(lvnFirstInput.value) : soc;
+    }
+    var res = compute(soc, hhaStart, lvnStart);
+    var therapyDate = therapyInput.value ? parseISO(therapyInput.value) : null;
+    render(res, therapyDate, hhaStart, lvnStart);
+  }
+
+  btn.addEventListener("click", run);
+  input.addEventListener("change", run);
+  input.addEventListener("keydown", function (e) { if (e.key === "Enter") run(); });
+  therapyInput.addEventListener("change", run);
+  hhaFirstInput.addEventListener("change", run);
+  lvnFirstInput.addEventListener("change", run);
+
+  var radios = document.querySelectorAll('input[name="followSoc"]');
+  radios.forEach(function (r) { r.addEventListener("change", function () { updateFollowVisibility(); run(); }); });
+
+  var today = new Date();
+  var def = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+  input.value = def;
+
+  run();
+})();
+</script>
+</body>
+</html>
