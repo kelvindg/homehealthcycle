@@ -132,6 +132,8 @@
   .tl-row:last-child { border-bottom: none; }
   .tl-num { font-size: 12px; font-weight: 700; color: var(--teal); width: 72px; flex-shrink: 0; }
   .tl-label { font-size: 14px; font-weight: 600; }
+  .tl-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .tl-oasis { font-size: 12px; color: var(--ink-soft); }
   .tl-date { margin-left: auto; font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .tl-date b { color: var(--ink); font-weight: 650; }
   .tl-row.violet .tl-num { color: var(--violet); }
@@ -301,7 +303,10 @@
     html += '<div class="grid">';
     html += '<div class="card indigo"><div class="cat">Recertification</div><div class="label">Every 60 days</div>';
     res.recerts.forEach(function (d, i) {
-      html += '<div class="tl-row"><span class="tl-num">' + (i + 1) + '</span><span class="tl-date"><b>' + fmtDate(d) + '</b></span></div>';
+      var wStart = addDays(d, -4);  // OASIS recert update: last 5 days of the 60-day cycle (day 56–60)
+      html += '<div class="tl-row"><span class="tl-num">' + (i + 1) + '</span>' +
+        '<span class="tl-body"><b>' + fmtDate(d) + '</b>' +
+        '<span class="tl-oasis">OASIS recert window: ' + fmtDate(wStart) + ' &rarr; ' + fmtDate(d) + '</span></span></div>';
     });
     if (res.feb29) html += '<div class="note">Feb 29 falls in this 60-day episode — subtract 1 day from the episode end date.</div>';
     html += '</div>';
